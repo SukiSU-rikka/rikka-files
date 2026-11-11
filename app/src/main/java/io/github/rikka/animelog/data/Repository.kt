@@ -39,7 +39,13 @@ class Repository(private val context: Context) {
 
     private fun load(): List<Entry> {
         if (file.exists()) {
-            runCatching { return AppJson.decodeFromString<Library>(file.readText()).entries }
+            val lib = runCatching { AppJson.decodeFromString<Library>(file.readText()) }.getOrNull()
+            if (lib != null) {
+                if (lib.version >= DATA_VERSION) return lib.entries
+                // 旧版数据：按种子修正升级，并先留一份升级前的备份
+                file.copyTo(File(context.filesDir, "library.v${lib.version}.json"), overwrite = true)
+                return migrateEntries(lib.entries, lib.version, seed()).also { writeFile(it) }
+            }
             // 文件坏了就留一份，免得被覆盖
             file.copyTo(File(context.filesDir, "library.broken.json"), overwrite = true)
         }
@@ -54,7 +60,7 @@ class Repository(private val context: Context) {
 
     private fun writeFile(list: List<Entry>) {
         val tmp = File(file.parentFile, "library.json.tmp")
-        tmp.writeText(AppJson.encodeToString(Library.serializer(), Library(entries = list)))
+        tmp.writeText(AppJson.encodeToString(Library.serializer(), Library(version = DATA_VERSION, entries = list)))
         tmp.renameTo(file)
     }
 

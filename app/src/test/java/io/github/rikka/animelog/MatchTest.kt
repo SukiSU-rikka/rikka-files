@@ -2,7 +2,13 @@ package io.github.rikka.animelog
 
 import io.github.rikka.animelog.data.AppJson
 import io.github.rikka.animelog.data.Bangumi
+import io.github.rikka.animelog.data.DATA_VERSION
 import io.github.rikka.animelog.data.Library
+import io.github.rikka.animelog.data.MatchState
+import kotlinx.serialization.json.int
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import io.github.rikka.animelog.data.Status
 import io.github.rikka.animelog.data.computeStats
 import kotlinx.coroutines.runBlocking
@@ -33,6 +39,28 @@ class MatchTest {
         assertEquals(null, Bangumi.seasonOf("进击的巨人"))
     }
 
+    /** 联网：用 -PseedMatch=1 运行，把 tools/seed_fixes.json 里人工复核的修正写回 seed.json。 */
+    @Test
+    fun applySeedFixes() = runBlocking {
+        assumeTrue(System.getProperty("seedMatch").orEmpty().isNotEmpty())
+        val fixes = AppJson.parseToJsonElement(File(System.getProperty("seedFixesFile")!!).readText())
+            .jsonObject["fixes"]!!.jsonArray.map { it.jsonObject }
+        val lib = AppJson.decodeFromString(Library.serializer(), seedFile.readText())
+        val out = lib.entries.map { e ->
+            val f = fixes.firstOrNull { it["id"]!!.jsonPrimitive.int.toLong() == e.id } ?: return@map e
+            var x = e
+            f["part"]?.jsonPrimitive?.content?.let { x = x.copy(part = it) }
+            f["bgm"]?.jsonPrimitive?.int?.let { id ->
+                val info = Bangumi.withStudio(Bangumi.subject(id)!!.info)
+                println("${e.id}\t${x.title}\t=> ${info.id} ${info.displayName} [${info.platform}]")
+                x = x.copy(bgm = info, match = MatchState.CONFIRMED)
+                Thread.sleep(250)
+            }
+            x
+        }
+        seedFile.writeText(AppJson.encodeToString(Library.serializer(), Library(version = DATA_VERSION, entries = out)))
+    }
+
     /** 联网：用 -PseedMatch=1 运行，匹配全部初始记录并写回 seed.json。 */
     @Test
     fun matchSeed() = runBlocking {
@@ -49,6 +77,6 @@ class MatchTest {
             Thread.sleep(250)
             e.copy(bgm = r.info, match = r.state)
         }
-        seedFile.writeText(AppJson.encodeToString(Library.serializer(), Library(entries = out)))
+        seedFile.writeText(AppJson.encodeToString(Library.serializer(), Library(version = DATA_VERSION, entries = out)))
     }
 }

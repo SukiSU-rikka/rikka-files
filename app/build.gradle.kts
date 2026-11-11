@@ -13,8 +13,8 @@ android {
         applicationId = "io.github.rikka.animelog"
         minSdk = 34
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     signingConfigs {
@@ -80,6 +80,7 @@ tasks.withType<Test>().configureEach {
     // 给 SeedMatchTest 用：-PseedMatch 时把匹配结果写回 assets/seed.json
     systemProperty("seedMatch", project.findProperty("seedMatch") ?: "")
     systemProperty("seedFile", file("src/main/assets/seed.json").absolutePath)
+    systemProperty("seedFixesFile", rootProject.file("tools/seed_fixes.json").absolutePath)
     systemProperty("roborazzi.test.record", "true")
     systemProperty("shotDir", layout.buildDirectory.dir("shots").get().asFile.absolutePath)
     testLogging { showStandardStreams = true }

@@ -1,0 +1,14 @@
+{
+  "_说明": "v1.1 人工复核后的修正：固定 Bangumi id，改条目名。MatchTest.applySeedFixes 读这个文件写回 seed.json；App 里 SeedMigrations 对已装 v1.0 的数据做同样的修正。",
+  "fixes": [
+    {"id": 48,  "part": "第一季 第1部分"},
+    {"id": 49,  "part": "第一季 第2部分"},
+    {"id": 50,  "part": "第二季 第1部分", "bgm": 373247},
+    {"id": 117, "part": "第二季 第2部分", "bgm": 444557},
+    {"id": 170, "bgm": 240828},
+    {"id": 295, "bgm": 376565},
+    {"id": 357, "bgm": 4291},
+    {"id": 421, "bgm": 502499, "note": "GROTESQQQUE 三段式剧场版中的一段，Bangumi 没有单独条目"},
+    {"id": 416, "bgm": 362335}
+  ]
+}

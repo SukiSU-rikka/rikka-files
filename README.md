@@ -28,5 +28,12 @@
 **数据**
 - 记录全部存在手机的 `files/library.json` 里，没有服务器
 - 原始记录：`tools/动漫记录表.txt`；`tools/parse_list.py` 把它拆成「作品 + 季/篇」，生成 `app/src/main/assets/seed.json`
-- 重新生成后，用 `gradle :app:testDebugUnitTest --tests '*MatchTest.matchSeed' -PseedMatch=1` 联网补上 Bangumi 信息
+- 重新生成后，用 `gradle :app:testDebugUnitTest --tests '*MatchTest.matchSeed' -PseedMatch=1` 联网补上 Bangumi 信息，
+  再用 `--tests '*MatchTest.applySeedFixes' -PseedMatch=1` 套上 `tools/seed_fixes.json` 里人工复核过的修正
+- 已装旧版的手机：种子只在第一次打开时导入，所以种子的修正由 `SeedMigrations.kt` 在升级后第一次启动时补上
+  （只改还停在旧错配上的条目，手动改过的不动；升级前的数据另存为 `files/library.v1.json`）
+
+**更新记录**
+- 1.1：修正 7 条 Bangumi 错配（无职转生第二季两部分、砂糖的幸福生活、四个人各自有着自己的秘密、最后的大魔王、夜露死驱少女、古利特宇宙）；无职转生四条改名为第一季/第二季的第1、第2部分
+- 1.0：首版
 - `UiShotTest` 用 Robolectric 在电脑上渲染界面截图（输出到 `app/build/shots/`）

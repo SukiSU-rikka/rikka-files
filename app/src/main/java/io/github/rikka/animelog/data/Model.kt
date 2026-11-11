@@ -112,6 +112,7 @@ data class Entry(
 
 @Serializable
 data class Library(
+    /** 没写版本号的是 v1.0 的数据 */
     val version: Int = 1,
     val entries: List<Entry> = emptyList(),
 )

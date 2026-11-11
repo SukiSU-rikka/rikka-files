@@ -171,7 +171,7 @@ class AppViewModel(app: Application) : AndroidViewModel(app) {
             val text = withContext(Dispatchers.IO) {
                 getApplication<Application>().contentResolver.openInputStream(uri)!!.bufferedReader().use { it.readText() }
             }
-            Backup.fromJson(text)
+            Backup.fromJson(text, repo::seed)
         }.onSuccess {
             repo.replaceAll(it)
             _toast.value = "已恢复 ${it.size} 条"

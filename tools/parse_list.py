@@ -128,6 +128,14 @@ def split_title(title: str):
     return title, ""
 
 
+# 整行特判：原文 -> 条目列表（人工复核过的拆法）
+RANGE_OVERRIDE = {
+    # 「全二季」指第一季的两部分，「OVA」实际是第二季第1部分（v1.1 复核）
+    "无职转生——全二季全部加OVA": ["第一季 第1部分", "第一季 第2部分", "第二季 第1部分"],
+    "无职转生第二季——全部": ["第二季 第2部分"],
+}
+
+
 def expand_range(rng: str):
     """范围文本 -> [条目, ...]；None 表示沿用标题里的条目。"""
     rng = rng.strip()
@@ -174,7 +182,7 @@ def main(src, dst):
                 rewatch = 1
             title = title[: m.start()].strip()
         series, title_part = split_title(title)
-        parts = expand_range(rng)
+        parts = RANGE_OVERRIDE.get(line) or expand_range(rng)
         if parts is None:
             parts = [title_part]
         elif title_part and parts == [""]:
@@ -192,7 +200,7 @@ def main(src, dst):
                 "note": note,
                 "source": line,
             })
-    json.dump({"version": 1, "entries": entries}, open(dst, "w", encoding="utf-8"),
+    json.dump({"version": 2, "entries": entries}, open(dst, "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
     print(f"{len(entries)} 条目, {len({e['series'] for e in entries})} 部作品", file=sys.stderr)
 

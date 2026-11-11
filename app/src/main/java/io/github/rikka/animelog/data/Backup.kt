@@ -5,9 +5,13 @@ import kotlinx.serialization.json.Json
 private val PrettyJson = Json(AppJson) { prettyPrint = true }
 
 object Backup {
-    fun toJson(list: List<Entry>): String = PrettyJson.encodeToString(Library.serializer(), Library(entries = list))
+    fun toJson(list: List<Entry>): String = PrettyJson.encodeToString(Library.serializer(), Library(version = DATA_VERSION, entries = list))
 
-    fun fromJson(text: String): List<Entry> = AppJson.decodeFromString(Library.serializer(), text).entries
+    /** 旧版本导出的备份也按种子修正升级。 */
+    fun fromJson(text: String, seed: () -> List<Entry>): List<Entry> {
+        val lib = AppJson.decodeFromString(Library.serializer(), text)
+        return if (lib.version >= DATA_VERSION) lib.entries else migrateEntries(lib.entries, lib.version, seed())
+    }
 
     /** 给 Excel 打开用，带 BOM 防中文乱码。 */
     fun toCsv(list: List<Entry>): String {
